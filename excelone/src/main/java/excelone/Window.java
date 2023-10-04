@@ -29,10 +29,12 @@ import com.raven.datechooser.DateChooser;
 import com.raven.datechooser.listener.DateChooserAction;
 import com.raven.datechooser.listener.DateChooserAdapter;
 import java.awt.Color;
+import javax.swing.JProgressBar;
 
 public class Window {
 
 	private JFrame frame;
+	JProgressBar progressBar;
 	private JTextField textSourceField;
 	private JTextField textTargetField;
 	private JButton getTargetFileButton;
@@ -71,17 +73,37 @@ public class Window {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
+
 		FlatDraculaIJTheme.setup();
 		final ExcelService service = new ExcelService();
-		
 		service.setCurrentDate();
+
+		class ProgressThread extends Thread {
+			@Override
+			public void run() {
+				ExcelService.progressValue = 0;
+				ExcelService.progressCount = 100 / (service.currentHour - service.firstHour + 1);
+				while (true) {
+					progressBar.setValue(ExcelService.progressValue);
+					progressBar.setStringPainted(true);
+					if (isInterrupted()) {
+						progressBar.setValue(0);
+						progressBar.setStringPainted(false);
+						ExcelService.progressValue = 0;
+						ExcelService.progressCount = 0;
+						return;
+					}
+				}
+			}
+
+		}
 
 		frame = new JFrame("ЛЕНИВАЯ ЖОПА v2.0");
 		frame.getContentPane().setFont(new Font("Arial Narrow", Font.PLAIN, 11));
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Toolkit toolkit = Toolkit.getDefaultToolkit();
 		Dimension dimension = toolkit.getScreenSize();
-		frame.setBounds(dimension.width/2 - 300, dimension.height/2 - 325, 600, 650);
+		frame.setBounds(dimension.width / 2 - 300, dimension.height / 2 - 325, 600, 650);
 		frame.setResizable(false);
 		frame.getContentPane().setLayout(null);
 
@@ -94,20 +116,17 @@ public class Window {
 		textSourceField.setColumns(10);
 		frame.setVisible(true);
 		frame.revalidate();
-		
+
 		if (!service.checkTrial()) {
 			JOptionPane.showMessageDialog(frame, "Тестовый период окончен", "ВНИМАНИЕ!", JOptionPane.WARNING_MESSAGE);
 			System.exit(0);
 		}
 
-
-//		FlatArcOrangeIJTheme.setup();
-
-		
-		
-		//		FlatIntelliJLaf.registerCustomDefaultsSource("style");
-//		FlatIntelliJLaf.setup();
-
+		progressBar = new JProgressBar();
+		progressBar.setValue(0);
+		progressBar.setStringPainted(false);
+		progressBar.setBounds(7, 572, 567, 14);
+		frame.getContentPane().add(progressBar);
 
 		JLabel copyMessageLabel = new JLabel("Идёт копирование данных");
 		copyMessageLabel.setForeground(new Color(255, 255, 128));
@@ -116,7 +135,7 @@ public class Window {
 		copyMessageLabel.setBounds(309, 38, 251, 20);
 		copyMessageLabel.setVisible(false);
 		frame.getContentPane().add(copyMessageLabel);
-		
+
 		JButton getSourceFileButton = new JButton("Выбрать источник данных");
 		getSourceFileButton.setFont(new Font("Tahoma", Font.BOLD, 11));
 		getSourceFileButton.setToolTipText("Выбрать файл \"РасходПоОбъектам\" для извлечения данных");
@@ -310,8 +329,8 @@ public class Window {
 				service.currentDay = date.getDate();
 				service.currentMonth = date.getMonth() + 1;
 				service.currentYear = date.getYear() + 1900;
-				textKegocField.setText(
-						service.fileToWriteDailyPath + "БРЭ для KEGOC Bassel " + service.currentDay + service.getMonthStringNameWithSuffix() + ".xlsx");
+				textKegocField.setText(service.fileToWriteDailyPath + "БРЭ для KEGOC Bassel " + service.currentDay
+						+ service.getMonthStringNameWithSuffix() + ".xlsx");
 				System.out.println(service.currentDay + " / " + service.currentMonth + " / " + service.currentYear);
 			}
 
@@ -338,8 +357,8 @@ public class Window {
 //					progressLabel.setText("Копирование данных...");
 					if (!service.compareDateAskue())
 						JOptionPane.showMessageDialog(frame,
-								("Различные даты в файлах\n\"" + new File(service.fileToReadPath).getName() + "\"\nи\n\""
-										+ new File(service.fileToWritePath).getName() + "\""),
+								("Различные даты в файлах\n\"" + new File(service.fileToReadPath).getName()
+										+ "\"\nи\n\"" + new File(service.fileToWritePath).getName() + "\""),
 								"Ошибка", JOptionPane.ERROR_MESSAGE);
 					else {
 						copyMessageLabel.setVisible(true);
@@ -347,7 +366,10 @@ public class Window {
 								("Скопировать данные в\n\"" + new File(service.fileToWritePath).getName()) + "\"?",
 								"Подтвердить действие", JOptionPane.YES_NO_OPTION);
 						if (input == 0) {
+							service.saveFile(new File(service.fileToWritePath));
 							System.out.println("Copy warn");
+//							ProgressThread progressThread = new ProgressThread();
+//							progressThread.start();
 							try {
 								service.copyAllRowsPerDay();
 //								progressLabel.setText("Выполнено!");
@@ -366,6 +388,7 @@ public class Window {
 												"Ошибка", JOptionPane.ERROR_MESSAGE);
 								System.out.println("Файл недоступен или открыт");
 							}
+//							progressThread.interrupt();
 						}
 						copyMessageLabel.setVisible(false);
 					}
@@ -393,8 +416,8 @@ public class Window {
 
 		textKegocField = new JTextField();
 //		textKegocField.setBackground(SystemColor.inactiveCaptionBorder);
-		textKegocField.setText(
-				service.fileToWriteDailyPath + "БРЭ для KEGOC Bassel " + service.currentDay + service.getMonthStringNameWithSuffix() + ".xlsx");
+		textKegocField.setText(service.fileToWriteDailyPath + "БРЭ для KEGOC Bassel " + service.currentDay
+				+ service.getMonthStringNameWithSuffix() + ".xlsx");
 		textKegocField.setEditable(false);
 		textKegocField.setColumns(10);
 		textKegocField.setBounds(7, 379, 566, 20);
@@ -415,8 +438,8 @@ public class Window {
 				File f;
 				try {
 					f = fileChooser.getSelectedFile();
-					textKegocField.setText(
-							f.getAbsolutePath() + "\\БРЭ для KEGOC Bassel " + service.currentDay + service.getMonthStringNameWithSuffix() + ".xlsx");
+					textKegocField.setText(f.getAbsolutePath() + "\\БРЭ для KEGOC Bassel " + service.currentDay
+							+ service.getMonthStringNameWithSuffix() + ".xlsx");
 					service.fileToWriteDailyPath = f.getAbsolutePath() + "\\";
 					System.out.println(service.fileToWriteDailyPath);
 				} catch (NullPointerException e1) {
@@ -440,19 +463,21 @@ public class Window {
 
 			public void actionPerformed(ActionEvent e) {
 				int input = JOptionPane.showConfirmDialog(frame,
-						("Создать файл \n" + "\"БРЭ для KEGOC Bassel " + service.currentDay + service.getMonthStringNameWithSuffix() + ".xlsx\"?"),
+						("Создать файл \n" + "\"БРЭ для KEGOC Bassel " + service.currentDay
+								+ service.getMonthStringNameWithSuffix() + ".xlsx\"?"),
 						"Подтверждение операции", JOptionPane.YES_NO_OPTION);
 				if (input == 0) {
 					try {
 						service.copyDailyRows();
 						JOptionPane.showMessageDialog(frame,
-								("Файл " + "\"БРЭ для KEGOC Bassel " + service.currentDay + service.getMonthStringNameWithSuffix() + ".xlsx\"\nуспешно создан!"),
+								("Файл " + "\"БРЭ для KEGOC Bassel " + service.currentDay
+										+ service.getMonthStringNameWithSuffix() + ".xlsx\"\nуспешно создан!"),
 								"Файл создан", JOptionPane.INFORMATION_MESSAGE);
 					} catch (FileNotFoundException e1) {
-						JOptionPane
-								.showMessageDialog(frame,
-										("Файл " + "\"БРЭ для KEGOC Bassel " + service.currentDay + service.getMonthStringNameWithSuffix() + ".xlsx\"\nнедоступен либо открыт"),
-										"Ошибка", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(frame,
+								("Файл " + "\"БРЭ для KEGOC Bassel " + service.currentDay
+										+ service.getMonthStringNameWithSuffix() + ".xlsx\"\nнедоступен либо открыт"),
+								"Ошибка", JOptionPane.ERROR_MESSAGE);
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
@@ -462,67 +487,68 @@ public class Window {
 		});
 
 		frame.getContentPane().add(createFileBre);
-		
+
 		JLabel maxLabel = new JLabel("Максимум");
 		maxLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		maxLabel.setBounds(25, 488, 86, 14);
 		frame.getContentPane().add(maxLabel);
-		
+
 		JLabel minLabel = new JLabel("Минимум");
 		minLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		minLabel.setBounds(181, 488, 83, 14);
 		frame.getContentPane().add(minLabel);
-		
+
 		JLabel avgLabel = new JLabel("Среднее");
 		avgLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		avgLabel.setBounds(337, 488, 86, 14);
 		frame.getContentPane().add(avgLabel);
-		
+
 		JLabel totalLabel = new JLabel("Всего");
 		totalLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		totalLabel.setBounds(489, 488, 71, 14);
 		frame.getContentPane().add(totalLabel);
-		
+
 		JSeparator separator_1 = new JSeparator();
 		separator_1.setBounds(7, 450, 567, 2);
 		frame.getContentPane().add(separator_1);
-		
+
 		JLabel statsDailyLabel = new JLabel("Статистика с начала суток до текущего часа");
 		statsDailyLabel.setFont(new Font("Times New Roman", Font.BOLD | Font.ITALIC, 16));
 		statsDailyLabel.setBounds(10, 463, 564, 14);
 		frame.getContentPane().add(statsDailyLabel);
-		
+
 		final JLabel maxValueLabel = new JLabel("0");
 		maxValueLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		maxValueLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		maxValueLabel.setBounds(25, 513, 86, 14);
 		frame.getContentPane().add(maxValueLabel);
-		
+
 		final JLabel minValueLabel = new JLabel("0");
 		minValueLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		minValueLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		minValueLabel.setBounds(181, 513, 83, 14);
 		frame.getContentPane().add(minValueLabel);
-		
+
 		final JLabel avgValueLabel = new JLabel("0");
 		avgValueLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		avgValueLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		avgValueLabel.setBounds(337, 513, 86, 14);
 		frame.getContentPane().add(avgValueLabel);
-		
+
 		final JLabel totalValueLabel = new JLabel("0");
 		totalValueLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		totalValueLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		totalValueLabel.setBounds(489, 513, 71, 14);
 		frame.getContentPane().add(totalValueLabel);
-		
+
 		JButton statsButton = new JButton("Получить статистику");
 		statsButton.setToolTipText("Получить статистику из \"БРЭ-ежедневный\"");
 		statsButton.setFont(new Font("Tahoma", Font.BOLD, 11));
 //		statsButton.setBackground(SystemColor.text);
 		statsButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(frame, "Для корректных данных \"БРЭ-ежедневный\" должен быть сохранён", "ВНИМАНИЕ!", JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog(frame, "Для корректных данных \"БРЭ-ежедневный\" должен быть сохранён",
+						"ВНИМАНИЕ!", JOptionPane.INFORMATION_MESSAGE);
 				try {
 					double[] stats = service.getStatistic();
 					maxValueLabel.setText(String.valueOf(Math.round(stats[0])));
@@ -537,33 +563,34 @@ public class Window {
 				}
 			}
 		});
-		statsButton.setBounds(7, 545, 205, 23);
+		statsButton.setBounds(7, 538, 205, 23);
 		frame.getContentPane().add(statsButton);
-		
+
 		JSeparator separator_1_1 = new JSeparator();
-		separator_1_1.setBounds(7, 579, 567, 2);
+		separator_1_1.setBounds(7, 597, 567, 2);
 		frame.getContentPane().add(separator_1_1);
-		
-		JLabel lblNewLabel = new JLabel("От Романа Сидорова специально для Космических Диспетчеров BasselGroup LLS  ©  2023 ");
+
+		JLabel lblNewLabel = new JLabel(
+				"От Романа Сидорова специально для Космических Диспетчеров BasselGroup LLS  ©  2023 ");
 		lblNewLabel.setHorizontalAlignment(SwingConstants.TRAILING);
 		lblNewLabel.setFont(new Font("Tahoma", Font.ITALIC, 11));
-		lblNewLabel.setBounds(7, 586, 567, 14);
+		lblNewLabel.setBounds(7, 597, 567, 14);
 		frame.getContentPane().add(lblNewLabel);
-		
+
 		analyzeField = new JTextField();
 		analyzeField.setBounds(7, 274, 567, 20);
 		analyzeField.setEditable(false);
 		analyzeField.setText(service.analyzePath);
 		frame.getContentPane().add(analyzeField);
 		analyzeField.setColumns(10);
-		
+
 		JButton chooseAnalyzeButton = new JButton("Выбрать файл анализа");
 		chooseAnalyzeButton.setToolTipText("Выбрать файл \"Анализ\" для копирования данных");
 		chooseAnalyzeButton.setFont(new Font("Tahoma", Font.BOLD, 11));
 		chooseAnalyzeButton.setBounds(8, 296, 205, 23);
 		frame.getContentPane().add(chooseAnalyzeButton);
 		chooseAnalyzeButton.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser fileChooser = new JFileChooser();
@@ -601,58 +628,66 @@ public class Window {
 				}
 			}
 		});
-		
+
 		JButton fillAnalyzeButton = new JButton("Заполнить анализ");
 		fillAnalyzeButton.setToolTipText("\"БРЭ-ежедневный\"");
 		fillAnalyzeButton.setFont(new Font("Tahoma", Font.BOLD, 11));
 		fillAnalyzeButton.setBounds(369, 296, 205, 23);
 		frame.getContentPane().add(fillAnalyzeButton);
-		
+
 		JSeparator separator_2 = new JSeparator();
 		separator_2.setBounds(7, 230, 567, 2);
 		frame.getContentPane().add(separator_2);
-		
+
 		JLabel titleAnalyze = new JLabel("Копирование данных в \"Анализ\"");
 		titleAnalyze.setFont(new Font("Times New Roman", Font.BOLD | Font.ITALIC, 16));
 		titleAnalyze.setBounds(7, 249, 567, 14);
 		frame.getContentPane().add(titleAnalyze);
-		
+
 		JSeparator separator_2_1 = new JSeparator();
 		separator_2_1.setBounds(7, 75, 567, 2);
 		frame.getContentPane().add(separator_2_1);
-		
+
 		JLabel titleDate = new JLabel("Настройка даты (UTC+1)");
 		titleDate.setFont(new Font("Times New Roman", Font.BOLD | Font.ITALIC, 16));
 		titleDate.setBounds(6, 6, 264, 14);
 		frame.getContentPane().add(titleDate);
-		
+
 		JSeparator separator_2_1_1 = new JSeparator();
 		separator_2_1_1.setBounds(7, 0, 567, 2);
 		frame.getContentPane().add(separator_2_1_1);
-		
-		
+
 		fillAnalyzeButton.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				copyMessageLabel.setVisible(true);
-				int input = JOptionPane.showConfirmDialog(frame, ("Скопировать данные\nиз \"" + new File(service.fileToWritePath).getName() + "\"\nв \""
-						+ new File(service.analyzePath).getName() + "\"?\n(БРЭ должен быть сохранён!)"),
-						"Заполнение данных за " + service.currentDay + " " + service.getMonthStringNameWithSuffix(), JOptionPane.YES_NO_OPTION);
+				int input = JOptionPane.showConfirmDialog(frame,
+						("Скопировать данные\nиз \"" + new File(service.fileToWritePath).getName() + "\"\nв \""
+								+ new File(service.analyzePath).getName() + "\"?\n(БРЭ должен быть сохранён!)"),
+						"Заполнение данных за " + service.currentDay + " " + service.getMonthStringNameWithSuffix(),
+						JOptionPane.YES_NO_OPTION);
 				System.out.println(input);
 				if (input == 0) {
+					
 					try {
-						double[][] data = service.getColumnsArrayFromBre( new int[]{7, 9});
+						service.saveFile(new File(service.analyzePath));
+						double[][] data = service.getColumnsArrayFromBre(new int[] { 7, 9 });
 						Arrays.stream(data).map(Arrays::toString).forEach(System.out::println);
-						service.fillAnalyze(data, new int[]{5,6});
-						JOptionPane.showMessageDialog(frame, "Копирование данных завершено", ("Записаны данные в \"" + new File(service.analyzePath).getName()) + "\"", JOptionPane.PLAIN_MESSAGE);
+						service.fillAnalyze(data, new int[] { 5, 6 });
+						JOptionPane.showMessageDialog(frame, "Копирование данных завершено",
+								("Записаны данные в \"" + new File(service.analyzePath).getName()) + "\"",
+								JOptionPane.PLAIN_MESSAGE);
 					} catch (IOException e1) {
-						JOptionPane.showMessageDialog(frame, "Файл \"" + new File(service.analyzePath).getName() + "\" недоступен либо открыт", "Ошибка", JOptionPane.ERROR_MESSAGE);
-					}					
-				}				
+						JOptionPane.showMessageDialog(frame,
+								"Файл \"" + new File(service.analyzePath).getName() + "\" недоступен либо открыт",
+								"Ошибка", JOptionPane.ERROR_MESSAGE);
+					}
+				}
 				copyMessageLabel.setVisible(false);
 			}
 		});
 
 	}
+
 }

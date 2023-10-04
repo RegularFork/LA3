@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -28,8 +29,12 @@ public class ExcelService {
 	public int currentYear = 2024;
 	public int firstHour = 1;
 	public int currentHour = 1;
+	public static int progressCount = 0;
+	public static int progressValue = 0;
+	
 	private int currentRow = 32;
 	private int rowTarget = 507;
+	
 	String sourceFile;
 	String targetFile;
 	public String fileToReadPath = "C:\\Users\\commercial\\Documents\\РасходПоОбъектам1.xlsx";
@@ -64,6 +69,7 @@ public class ExcelService {
 	private void copyOneRow() throws IllegalArgumentException, IOException {
 		try {
 			double[] rowValues = readRowFromPrimaryFile();
+			progressValue += progressCount;
 			writeRowToFile(rowValues);
 		} catch (FileNotFoundException e) {
 			System.out.println("\n*** ОШИБКА:\n*** Файл \"" + fileToWritePath.substring(34) + "\" открыт\n"
@@ -107,6 +113,7 @@ public class ExcelService {
 		Sheet sheetToWrite = wbToWrite.getSheetAt(0);
 		sheetToWrite.setForceFormulaRecalculation(true);
 		for (int i = 0; i < 28; i++) {
+			System.out.println("=================== " + progressValue);
 			sheetToWrite.getRow(rowTarget).getCell(i + 11).setCellValue(rowValues[i]);
 		}
 		sheetToWrite.getRow(rowTarget).getCell(5).setCellValue(rowValues[28]);
@@ -474,6 +481,10 @@ public class ExcelService {
 			System.out.println("Analyze file write success");
 		}
 		
+	}
+	
+	public void saveFile(File f) throws IOException {
+		Files.copy(f.toPath(), new File("C:\\Users\\commercial\\Documents\\"+f.getName()+" бэкап").toPath());
 	}
 	
 }

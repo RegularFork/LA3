@@ -18,6 +18,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.KeyStroke;
 
 import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatAtomOneDarkIJTheme;
@@ -34,6 +35,24 @@ public class AppSwing {
 		
 		JButton button = new JButton("BUTTON");
 		panel.add(button);
+		
+		JProgressBar progressBar = new JProgressBar();
+		progressBar = new JProgressBar();
+		progressBar.setValue(5);
+		progressBar.setStringPainted(false);
+		progressBar.setBounds(7, 572, 567, 14);
+		frame.getContentPane().add(progressBar);
+		double d = 0;
+		for (int i = 1; i < 1000000000; i++) {
+			d += Math.sqrt(i);
+			
+			if (i % 10000000 == 0) {
+				int val = (int)Math.round(i/10000000);
+				System.out.println(val);
+				progressBar.setValue(val);
+			}
+		}
+		System.out.println(d);
 		
 	}
 	
