@@ -6,19 +6,33 @@ public class AppData {
 	static int day;
 	static int month;
 	static int year;
+	static String[] nssList = new String[] { "Корниенко В.А.", "Малетин А.И.", "Симон Ф.И.", "Состравчук А.С.", "Павлов А.С." };
+	static String[] hoursArray = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"};
 	static String pathBreMonthly = "\\\\172.16.16.16\\коммерческий отдел\\ОКТЯБРЬ БРЭ ежедневный.xlsx";
 	static String kegocTemplate = "C:\\Users\\commercial\\Documents\\MyFiles\\excelpoint\\KEGOC_template.xlsx";
 	static String kegocPath = "C:\\Users\\commercial\\Desktop\\Суточная ведомость\\";
 	static String dailyStatsPath = "\\\\172.16.16.16\\коммерческий отдел\\";
 	static String dailyFileName = "Суточная выработка ОКТЯБРЬ.xlsx";
+	static String askuePath = "C:\\Users\\commercial\\Documents\\";
+	static String askueFileName = "РасходПоОбъектам1.xlsx";
+	static String dailyBrePath =  "\\\\172.16.16.16\\коммерческий отдел\\";
+	static String dailyBreFileName = "ОКТЯБРЬ БРЭ ежедневный.xlsx";
+	static final String FILE_EXTENSION = ".xlsx";
 	static final int ROWS_OFFSET = 2;
 	static final int CELLS_OFFSET = 3;
 	static final int BRE_OFFSET = 4;
 	static int firstHour = 1;
+	static int currentHour = 1;
 	static int lastHour = 24;
 	static String startNssString = "Корниенко В.А.";
 	static String middleNssString = "Корниенко В.А.";
 	static String endNssString = "Корниенко В.А.";
+	static String fileFilterText = "Excel (.xlsx)";
+	
+	
+	static void printTimeLimits() {
+		System.out.println("Time limits is " + firstHour + " - " + currentHour);
+	}
 	
 	static void setCurrentDate(DateChooser chDate) {
 		day = chDate.getSelectedDate().getDate();

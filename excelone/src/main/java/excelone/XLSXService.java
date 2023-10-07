@@ -17,7 +17,7 @@ class XLSXService {
 
 	double[][] getColumnsArrayFromBre(int... columns) throws IOException {
 
-		double[][] result = new double[AppData.lastHour - AppData.firstHour + 1][columns.length];
+		double[][] result = new double[AppData.currentHour - AppData.firstHour + 1][columns.length];
 
 		FileInputStream fis = null;
 		Workbook wb = null;
@@ -70,7 +70,7 @@ class XLSXService {
 			System.out.println("Director's file value write success");
 			
 			sheet.getRow(2).getCell(1).setCellValue(getInitials(AppData.startNssString));
-			sheet.getRow(4).getCell(1).setCellValue(AppData.middleNssString);
+			sheet.getRow(5).getCell(1).setCellValue(AppData.middleNssString);
 			sheet.getRow(17).getCell(1).setCellValue(AppData.endNssString);
 			
 			fis.close();
@@ -172,6 +172,7 @@ class XLSXService {
 		if (name.equals("Малетин А.И.")) return "М.А.";
 		if (name.equals("Симон Ф.И.")) return "С.И.";
 		if (name.equals("Состравчук А.С.")) return "С.А.";
+		if (name.equals("Павлов А.С.")) return "П.А.";
 		
 		return name;
 	}
