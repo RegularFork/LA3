@@ -1,5 +1,14 @@
 package excelone;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import com.raven.datechooser.DateChooser;
 
 public class AppData {
@@ -17,6 +26,8 @@ public class AppData {
 	static String askueFileName = "РасходПоОбъектам1.xlsx";
 	static String dailyBrePath =  "\\\\172.16.16.16\\коммерческий отдел\\";
 	static String dailyBreFileName = "ОКТЯБРЬ БРЭ ежедневный.xlsx";
+	static String dailyAnalyzePath = "\\\\172.16.16.16\\коммерческий отдел\\";
+	static String dailyAnalyzeFileName = "Анализ_октябрь.xlsx";
 	static final String FILE_EXTENSION = ".xlsx";
 	static final int ROWS_OFFSET = 2;
 	static final int CELLS_OFFSET = 3;
@@ -43,6 +54,86 @@ public class AppData {
 	static String getActualDate() {
 		return day + " " + getMonthStringNameWithSuffix();
 	}
+	
+	static double[][] getStatistic() throws FileNotFoundException, IOException {
+		double[][] result = new double[2][4];
+		double[] dailyPowerData = new double[24];
+		double[] dailySnData = new double[24];
+		try (FileInputStream fis = new FileInputStream(dailyBrePath + dailyBreFileName)){
+			System.out.println(dailyBrePath + dailyBreFileName);
+			Workbook wb = new XSSFWorkbook(fis);
+			Sheet sheet = wb.getSheetAt(0);
+			for (int row = 0; row < 24; row++) {
+				int targetRow = ((day - 1) * 24 + BRE_OFFSET) + (row);
+				
+				if (targetRow >= sheet.getLastRowNum() - 1) {
+					wb.close();
+					throw new IllegalArgumentException();
+				}
+				dailyPowerData[row] = sheet.getRow(targetRow).getCell(7).getNumericCellValue();
+				System.out.println((targetRow + 1) + " - " + dailyPowerData[row]);
+			}
+			for (int row = 0; row < 24; row++) {
+				int targetRow = ((day - 1) * 24 + BRE_OFFSET) + (row);
+				
+				if (targetRow >= sheet.getLastRowNum() - 1) {
+					wb.close();
+					throw new IllegalArgumentException();
+				}
+				dailySnData[row] = sheet.getRow(targetRow).getCell(9).getNumericCellValue();
+				System.out.println(dailySnData[row]);
+			}
+			wb.close();
+			fis.close();
+			System.out.println("Данные статистики считаны");
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		result[0][0] = getMaxStatistic(dailyPowerData);
+		result[0][1] = getMinStatistic(dailyPowerData);
+		result[0][2] = getAvgStatistic(dailyPowerData);
+		result[0][3] = getTotalStatistic(dailyPowerData);
+		result[1][0] = getMaxStatistic(dailySnData);
+		result[1][1] = getMinStatistic(dailySnData);
+		result[1][2] = getAvgStatistic(dailySnData);
+		result[1][3] = getTotalStatistic(dailySnData);
+		return result;
+	}
+	private static double getMaxStatistic(double[] array) {
+		double maxVal = array[0];
+		for (double val : array) {
+			if (val > maxVal) maxVal = val;
+		}
+		return maxVal;
+	}
+	private static double getMinStatistic(double[] array) {
+		double minVal = array[0];
+		for (double val : array) {
+			if (val < minVal && val !=0 && val != -7) minVal = val;
+		}
+		return minVal;
+	}
+	private static double getAvgStatistic(double[] array) {
+		int count = 24;
+		double sum = 0;
+		for (double val : array) {
+			sum += val;
+			if (val == 0 && val == -7) count--;
+		}
+		return sum / count;
+	}
+	private static double getTotalStatistic(double[] array) {
+		double sum = 0;
+		for (double val : array) {
+			if (val != -7) sum += val;
+		}
+		return sum;
+	}
+	
+	
+	
+	
 	
 	static String getMonthStringName() {
 		if (month == 1) return " январь";

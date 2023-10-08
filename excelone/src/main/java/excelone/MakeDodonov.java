@@ -32,6 +32,13 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.JLabel;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+import java.awt.Font;
+import javax.swing.JMenuBar;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JToolBar;
 
 public class MakeDodonov {
 
@@ -43,6 +50,9 @@ public class MakeDodonov {
 	private JTextField askuePathTextField;
 	private JTextField dailyBrePathTextField;
 	private JComboBox currentHourCombo;
+	private JComboBox analyzeCurrentHourCombo;
+	private JComboBox analyzeFirstHourCombo;
+	private JTextField analyzeField;
 
 	/**
 	 * Launch the application.
@@ -74,10 +84,10 @@ public class MakeDodonov {
 	 */
 	private void initialize() {
 		XLSXService service = new XLSXService();
-		frame = new JFrame("ЛЕНИВАЯ ЖОПА");
+		frame = new JFrame("ЛЕНИВАЯ ЖОПА  Premium");
 		Toolkit toolkit = Toolkit.getDefaultToolkit();
 		Dimension dimension = toolkit.getScreenSize();
-		frame.setBounds(dimension.width / 2 - 350, dimension.height / 2 - 150, 700, 400);
+		frame.setBounds(dimension.width / 2 - 350, dimension.height / 2 - 235, 700, 530);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 		frame.setResizable(false);
@@ -87,19 +97,19 @@ public class MakeDodonov {
 		frame.getContentPane().add(separator);
 
 		JTabbedPane mainTabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		mainTabbedPane.setBounds(10, 50, 664, 225);
+		mainTabbedPane.setBounds(10, 81, 664, 225);
 		frame.getContentPane().add(mainTabbedPane);
 
 		JLabel dateLabel = new JLabel("Дата (UTC+1)");
 		dateLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		dateLabel.setBounds(107, 11, 86, 34);
+		dateLabel.setBounds(105, 36, 86, 34);
 		frame.getContentPane().add(dateLabel);
 		
 		// === Date set ===
 		dateField = new JTextField();
 		dateField.setHorizontalAlignment(SwingConstants.CENTER);
 		dateField.setColumns(10);
-		dateField.setBounds(22, 11, 86, 34);
+		dateField.setBounds(20, 36, 86, 34);
 		frame.getContentPane().add(dateField);
 		chDate.setTextField(dateField);
 		chDate.setLabelCurrentDayVisible(true);
@@ -488,12 +498,224 @@ public class MakeDodonov {
 		});
 		createDirectorButton_1.setBounds(524, 151, 125, 33);
 		createKegocPanel.add(createDirectorButton_1);
+		
+		
+		// === Анализ ПОЧИНИТЬ ВРЕМЯ =============================================================================================
+		
+		AnalyzeService analyzeService = new AnalyzeService();
+		
+		JPanel fillAnalyzePanel = new JPanel();
+		fillAnalyzePanel.setLayout(null);
+		mainTabbedPane.addTab("Анализ", null, fillAnalyzePanel, null);
+		
+		
+		analyzeField = new JTextField();
+		analyzeField.setText(AppData.dailyAnalyzePath + AppData.dailyAnalyzeFileName);
+		analyzeField.setEditable(false);
+		analyzeField.setColumns(10);
+		analyzeField.setBounds(10, 12, 598, 33);
+		fillAnalyzePanel.add(analyzeField);
+		
+		JButton selectAnalyzePathButton = new JButton("...");
+		selectAnalyzePathButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fileChooser = new JFileChooser();
+				fileChooser.setCurrentDirectory(new File(AppData.dailyAnalyzePath));
+				fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+
+				fileChooser.showDialog(frame, "Выбрать папку");
+				File f;
+				try {
+					f = fileChooser.getSelectedFile();
+					fileTextField.setText(f.getAbsolutePath() + "\\" + AppData.dailyAnalyzeFileName);
+					AppData.dailyAnalyzePath = f.getAbsolutePath() + "\\";
+					System.out.println("dailyAnalyzePath set to " + AppData.dailyAnalyzePath);
+				} catch (NullPointerException e1) {
+					System.out.println("Analyze Folder not choosed");
+				}
+			}
+		});
+		selectAnalyzePathButton.setBounds(618, 11, 31, 34);
+		fillAnalyzePanel.add(selectAnalyzePathButton);
+		
+		JButton fillAnalyzeButton = new JButton("Записать в файл");
+		fillAnalyzeButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int input = JOptionPane.showConfirmDialog(frame,
+						("Записать данные в \"" + AppData.dailyAnalyzeFileName + "\"\n от " + AppData.day + " " + AppData.getMonthStringNameWithSuffix() + "?"), "Подтверждение операции",
+						JOptionPane.YES_NO_OPTION);
+				System.out.println(input);
+				if (input == 0) {
+					try {
+						double[][] data = analyzeService.getColumnsArrayFromBre(new int[] { 7, 9 });
+						analyzeService.fillAnalyze(data, new int[] { 5, 6 });
+						JOptionPane.showMessageDialog(fillAnalyzePanel, "Данные записаны", "ИНФОРМАЦИЯ",
+								JOptionPane.INFORMATION_MESSAGE);
+					} 
+					catch (IOException e1) {
+						JOptionPane.showMessageDialog(fillAnalyzePanel,
+								"Файл \"" + AppData.dailyAnalyzeFileName + "\" недоступен либо открыт", "ОШИБКА",
+								JOptionPane.ERROR_MESSAGE);
+						e1.printStackTrace();
+					}
+					
+				}
+			}
+		});
+		fillAnalyzeButton.setBounds(524, 151, 125, 33);
+		fillAnalyzePanel.add(fillAnalyzeButton);
+		
+
 
 		JSeparator separator_1 = new JSeparator();
-		separator_1.setBounds(10, 286, 664, 2);
+		separator_1.setBounds(10, 317, 664, 2);
 		frame.getContentPane().add(separator_1);
 		
 		
-
+		JLabel lblNewLabel = new JLabel("Минимум");
+		lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		lblNewLabel.setBounds(22, 417, 102, 23);
+		frame.getContentPane().add(lblNewLabel);
+		
+		JLabel lblNewLabel_1 = new JLabel("Максимум");
+		lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
+		lblNewLabel_1.setBounds(134, 417, 102, 23);
+		frame.getContentPane().add(lblNewLabel_1);
+		
+		JLabel lblNewLabel_2 = new JLabel("Среднее");
+		lblNewLabel_2.setHorizontalAlignment(SwingConstants.CENTER);
+		lblNewLabel_2.setBounds(246, 417, 102, 23);
+		frame.getContentPane().add(lblNewLabel_2);
+		
+		JLabel lblNewLabel_3 = new JLabel("Всего");
+		lblNewLabel_3.setHorizontalAlignment(SwingConstants.CENTER);
+		lblNewLabel_3.setBounds(358, 417, 102, 23);
+		frame.getContentPane().add(lblNewLabel_3);
+		
+		JLabel snMinStats = new JLabel("-");
+		snMinStats.setFont(new Font("Tahoma", Font.BOLD, 15));
+		snMinStats.setHorizontalAlignment(SwingConstants.CENTER);
+		snMinStats.setBounds(22, 375, 102, 34);
+		frame.getContentPane().add(snMinStats);
+		
+		JLabel snMaxStats = new JLabel("-");
+		snMaxStats.setFont(new Font("Tahoma", Font.BOLD, 15));
+		snMaxStats.setHorizontalAlignment(SwingConstants.CENTER);
+		snMaxStats.setBounds(134, 375, 102, 34);
+		frame.getContentPane().add(snMaxStats);
+		
+		JLabel snAvgStats = new JLabel("-");
+		snAvgStats.setFont(new Font("Tahoma", Font.BOLD, 15));
+		snAvgStats.setHorizontalAlignment(SwingConstants.CENTER);
+		snAvgStats.setBounds(246, 375, 102, 34);
+		frame.getContentPane().add(snAvgStats);
+		
+		JLabel snTotalStats = new JLabel("-");
+		snTotalStats.setFont(new Font("Tahoma", Font.BOLD, 15));
+		snTotalStats.setHorizontalAlignment(SwingConstants.CENTER);
+		snTotalStats.setBounds(358, 375, 102, 34);
+		frame.getContentPane().add(snTotalStats);
+		
+		JLabel powerMinStats = new JLabel("-");
+		powerMinStats.setFont(new Font("Tahoma", Font.BOLD, 15));
+		powerMinStats.setHorizontalAlignment(SwingConstants.CENTER);
+		powerMinStats.setBounds(22, 330, 102, 34);
+		frame.getContentPane().add(powerMinStats);
+		
+		JLabel powerMaxStats = new JLabel("-");
+		powerMaxStats.setFont(new Font("Tahoma", Font.BOLD, 15));
+		powerMaxStats.setHorizontalAlignment(SwingConstants.CENTER);
+		powerMaxStats.setBounds(134, 330, 102, 34);
+		frame.getContentPane().add(powerMaxStats);
+		
+		JLabel powerAvgStats = new JLabel("-");
+		powerAvgStats.setFont(new Font("Tahoma", Font.BOLD, 15));
+		powerAvgStats.setHorizontalAlignment(SwingConstants.CENTER);
+		powerAvgStats.setBounds(246, 330, 102, 34);
+		frame.getContentPane().add(powerAvgStats);
+		
+		JLabel powerTotalStats = new JLabel("-");
+		powerTotalStats.setFont(new Font("Tahoma", Font.BOLD, 15));
+		powerTotalStats.setHorizontalAlignment(SwingConstants.CENTER);
+		powerTotalStats.setBounds(358, 330, 102, 34);
+		frame.getContentPane().add(powerTotalStats);
+		
+		JLabel powerTitleLabel = new JLabel("Выработка");
+		powerTitleLabel.setBounds(537, 342, 65, 14);
+		frame.getContentPane().add(powerTitleLabel);
+		
+		JLabel snTitleLabel = new JLabel("Собственные Нужды");
+		snTitleLabel.setBounds(537, 387, 125, 14);
+		frame.getContentPane().add(snTitleLabel);
+		
+		JButton getStatisticButton = new JButton("Статистика");
+		getStatisticButton.setBounds(537, 417, 125, 33);
+		frame.getContentPane().add(getStatisticButton);
+		getStatisticButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					double[][]statsArray = AppData.getStatistic();
+					powerMinStats.setText(String.valueOf(Math.round(statsArray[0][0])));
+					powerMaxStats.setText(String.valueOf(Math.round(statsArray[0][1])));
+					powerAvgStats.setText(String.valueOf(Math.round(statsArray[0][2])));
+					powerTotalStats.setText(String.valueOf(Math.round(statsArray[0][3])));
+					snMinStats.setText(String.valueOf(Math.round(statsArray[1][0])));
+					snMaxStats.setText(String.valueOf(Math.round(statsArray[1][1])));
+					snAvgStats.setText(String.valueOf(Math.round(statsArray[1][2])));
+					snTotalStats.setText(String.valueOf(Math.round(statsArray[1][3])));
+				} catch (FileNotFoundException e1) {
+					JOptionPane.showMessageDialog(frame,
+							"Файл \"" + AppData.dailyFileName + "\" недоступен либо открыт", "ОШИБКА",
+							JOptionPane.ERROR_MESSAGE);
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+		
+		
+		JMenuBar menuBar = new JMenuBar();
+		menuBar.setBounds(0, 0, 674, 22);
+		frame.getContentPane().add(menuBar);
+		
+		JMenu mnNewMenu = new JMenu("Файл");
+		menuBar.add(mnNewMenu);
+		
+		JMenuItem quitMenuItem = new JMenuItem("Выход");
+		mnNewMenu.add(quitMenuItem);
+		quitMenuItem.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.exit(0);
+			}
+		});
+		
+		JMenu mnNewMenu_1 = new JMenu("Инструменты");
+		menuBar.add(mnNewMenu_1);
+		
+		JMenuItem fileCloserMenuItem = new JMenuItem("Закрывашка");
+		mnNewMenu_1.add(fileCloserMenuItem);
+		
+		JSeparator separator_2 = new JSeparator();
+		separator_2.setBounds(10, 461, 664, 2);
+		frame.getContentPane().add(separator_2);
+		
+		JLabel lblNewLabel_4 = new JLabel("Для лучших Космических Диспетчеров и Игоря © BasselGroup LLS 2023");
+		lblNewLabel_4.setHorizontalAlignment(SwingConstants.TRAILING);
+		lblNewLabel_4.setBounds(10, 466, 664, 14);
+		frame.getContentPane().add(lblNewLabel_4);
+		fileCloserMenuItem.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				FileCloserWindow fileCloserWindow = new FileCloserWindow();
+				fileCloserWindow.secondFrame.setVisible(true);
+			}
+		});
+		
+		
 	}
 }
