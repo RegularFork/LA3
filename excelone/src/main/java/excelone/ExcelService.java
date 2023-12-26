@@ -41,11 +41,11 @@ public class ExcelService {
 	// Test file
 //	private String fileToWritePath = "C:\\Users\\commercial\\Documents\\MyFiles\\excelpoint\\СЕНТЯБРЬ БРЭ result.xlsx";
 	// Original file
-	public String fileToWritePath = "\\\\172.16.16.16\\коммерческий отдел\\ОКТЯБРЬ БРЭ ежедневный.xlsx";
+	public String fileToWritePath = "\\\\172.16.16.16\\коммерческий отдел\\НОЯБРЬ БРЭ ежедневный.xlsx";
 	public String fileToWriteDailyTemplate = "C:\\Users\\commercial\\Documents\\MyFiles\\excelpoint\\KEGOC_template.xlsx";
 	public String fileToWriteDailyPath = "C:\\Users\\commercial\\Desktop\\Суточная ведомость\\";
-	public String analyzePath = "\\\\172.16.16.16\\коммерческий отдел\\Анализ_октябрь.xlsx";
-	public String analyzeFileName = "Анализ_октябрь.xlsx";
+	public String analyzePath = "\\\\172.16.16.16\\коммерческий отдел\\Анализ_ноябрь.xlsx";
+	public String analyzeFileName = "Анализ_ноябрь.xlsx";
 	int[] cellNumbersToReadSBRE = { 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
 			35, 37, 39, 41, 47, 49, 42, 44 };
 

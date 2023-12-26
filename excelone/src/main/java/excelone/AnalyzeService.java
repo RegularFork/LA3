@@ -25,7 +25,7 @@ public class AnalyzeService {
 			e.printStackTrace();
 		}
 		for (int i = 0; i < result.length; i++) {
-			int targetRow = ((AppData.day - 1) * 24 + AppData.BRE_OFFSET) + AppData.firstHour - 1;
+			int targetRow = ((AppData.day - 1) * 24 + AppData.BRE_OFFSET);
 			for (int j = 0; j < columns.length; j++) {
 				System.out.println(targetRow);
 				System.out.println("row: " + i + " / column: " + j);
@@ -46,7 +46,7 @@ public class AnalyzeService {
 			sheet.setForceFormulaRecalculation(true);
 			for (int i = 0; i < dataArray.length; i++) {
 				for (int j = 0; j < columns.length; j++) {
-					int targetRow = (3 + (AppData.day - 1) * 25) + i + AppData.firstHour - 1;
+					int targetRow = (3 + (AppData.day - 1) * 25) + i;
 					if (targetRow >= sheet.getLastRowNum() - 1) {
 						wb.close();
 						fis.close();

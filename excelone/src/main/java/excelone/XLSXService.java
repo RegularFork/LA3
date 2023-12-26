@@ -17,7 +17,7 @@ class XLSXService {
 
 	double[][] getColumnsArrayFromBre(int... columns) throws IOException {
 
-		double[][] result = new double[AppData.currentHour - AppData.firstHour + 1][columns.length];
+		double[][] result = new double[24][columns.length];
 
 		FileInputStream fis = null;
 		Workbook wb = null;
@@ -30,7 +30,7 @@ class XLSXService {
 			e.printStackTrace();
 		}
 		for (int i = 0; i < result.length; i++) {
-			int targetRow = ((AppData.day - 1) * 24 + AppData.BRE_OFFSET) + AppData.firstHour - 1;
+			int targetRow = ((AppData.day - 1) * 24 + AppData.BRE_OFFSET);
 			for (int j = 0; j < columns.length; j++) {
 				System.out.println(targetRow);
 				System.out.println("row: " + i + " / column: " + j);

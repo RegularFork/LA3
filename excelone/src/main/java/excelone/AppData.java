@@ -5,6 +5,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -17,17 +20,21 @@ public class AppData {
 	static int year;
 	static String[] nssList = new String[] { "Корниенко В.А.", "Малетин А.И.", "Симон Ф.И.", "Состравчук А.С.", "Павлов А.С." };
 	static String[] hoursArray = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"};
-	static String pathBreMonthly = "\\\\172.16.16.16\\коммерческий отдел\\ОКТЯБРЬ БРЭ ежедневный.xlsx";
-	static String kegocTemplate = "C:\\Users\\commercial\\Documents\\MyFiles\\excelpoint\\KEGOC_template.xlsx";
+	static String pathBreMonthly = "\\\\172.16.16.16\\коммерческий отдел\\ДЕКАБРЬ БРЭ ежедневный.xlsx";
+//	static String kegocTemplate = "C:\\Users\\commercial\\Documents\\MyFiles\\excelpoint\\KEGOC_template.xlsx";
+	static String kegocTemplate = ".\\resources\\KEGOC_template.xlsx";
+	static String koremTemplate30 = ".\\resources\\KOREM_template_30.xlsx";
+	static String koremTemplate31 = ".\\resources\\KOREM_template_31.xlsx";
 	static String kegocPath = "C:\\Users\\commercial\\Desktop\\Суточная ведомость\\";
+	static String koremPath = "C:\\Users\\commercial\\Desktop\\Суточная ведомость\\";
 	static String dailyStatsPath = "\\\\172.16.16.16\\коммерческий отдел\\";
-	static String dailyFileName = "Суточная выработка ОКТЯБРЬ.xlsx";
+	static String dailyFileName = "Суточная выработка НОЯБРЬ.xlsx";
 	static String askuePath = "C:\\Users\\commercial\\Documents\\";
 	static String askueFileName = "РасходПоОбъектам1.xlsx";
 	static String dailyBrePath =  "\\\\172.16.16.16\\коммерческий отдел\\";
-	static String dailyBreFileName = "ОКТЯБРЬ БРЭ ежедневный.xlsx";
+	static String dailyBreFileName = "ДЕКАБРЬ БРЭ ежедневный.xlsx";
 	static String dailyAnalyzePath = "\\\\172.16.16.16\\коммерческий отдел\\";
-	static String dailyAnalyzeFileName = "Анализ_октябрь.xlsx";
+	static String dailyAnalyzeFileName = "Анализ_ноябрь.xlsx";
 	static final String FILE_EXTENSION = ".xlsx";
 	static final int ROWS_OFFSET = 2;
 	static final int CELLS_OFFSET = 3;
@@ -55,7 +62,7 @@ public class AppData {
 		return day + " " + getMonthStringNameWithSuffix();
 	}
 	
-	static double[][] getStatistic() throws FileNotFoundException, IOException {
+	static double[][] getStatistic() throws IllegalArgumentException, FileNotFoundException, IOException {
 		double[][] result = new double[2][4];
 		double[] dailyPowerData = new double[24];
 		double[] dailySnData = new double[24];
@@ -63,6 +70,7 @@ public class AppData {
 			System.out.println(dailyBrePath + dailyBreFileName);
 			Workbook wb = new XSSFWorkbook(fis);
 			Sheet sheet = wb.getSheetAt(0);
+			System.out.println("last Row in file: " + sheet.getLastRowNum());
 			for (int row = 0; row < 24; row++) {
 				int targetRow = ((day - 1) * 24 + BRE_OFFSET) + (row);
 				
@@ -90,12 +98,12 @@ public class AppData {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		result[0][0] = getMaxStatistic(dailyPowerData);
-		result[0][1] = getMinStatistic(dailyPowerData);
+		result[0][0] = getMinStatistic(dailyPowerData);
+		result[0][1] = getMaxStatistic(dailyPowerData);
 		result[0][2] = getAvgStatistic(dailyPowerData);
 		result[0][3] = getTotalStatistic(dailyPowerData);
-		result[1][0] = getMaxStatistic(dailySnData);
-		result[1][1] = getMinStatistic(dailySnData);
+		result[1][0] = getMinStatistic(dailySnData);
+		result[1][1] = getMaxStatistic(dailySnData);
 		result[1][2] = getAvgStatistic(dailySnData);
 		result[1][3] = getTotalStatistic(dailySnData);
 		return result;
@@ -115,12 +123,16 @@ public class AppData {
 		return minVal;
 	}
 	private static double getAvgStatistic(double[] array) {
+		System.out.println("Enter avg stats");
 		int count = 24;
 		double sum = 0;
 		for (double val : array) {
-			sum += val;
-			if (val == 0 && val == -7) count--;
+			
+			if (val == 0 || val == -7) System.out.println("Count is " + --count);
+			else sum += val;
 		}
+		double avg = sum /count;
+		System.out.println(count);
 		return sum / count;
 	}
 	private static double getTotalStatistic(double[] array) {

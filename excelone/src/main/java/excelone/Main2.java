@@ -27,6 +27,7 @@ public class Main2 {
 			}
 			
 			System.out.println("\n\nЧто-нибудь ещё?\n\n\n");
+			System.out.println();
 		}
 		
 	}
