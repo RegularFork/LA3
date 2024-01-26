@@ -20,21 +20,26 @@ public class AppData {
 	static int year;
 	static String[] nssList = new String[] { "Корниенко В.А.", "Малетин А.И.", "Симон Ф.И.", "Состравчук А.С.", "Павлов А.С." };
 	static String[] hoursArray = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"};
-	static String pathBreMonthly = "\\\\172.16.16.16\\коммерческий отдел\\ДЕКАБРЬ БРЭ ежедневный.xlsx";
-//	static String kegocTemplate = "C:\\Users\\commercial\\Documents\\MyFiles\\excelpoint\\KEGOC_template.xlsx";
-	static String kegocTemplate = ".\\resources\\KEGOC_template.xlsx";
+	static String pathBreMonthly = "\\\\172.16.16.16\\коммерческий отдел\\ЯНВАРЬ БРЭ ежедневный.xlsx";
+	static String kegocTemplate = "C:\\Users\\commercial\\Documents\\MyFiles\\excelpoint\\KEGOC_template.xlsx";
+//	static String kegocTemplate = ".\\resources\\KEGOC_template.xlsx"; // относительный путь не работает после компиляции
 	static String koremTemplate30 = ".\\resources\\KOREM_template_30.xlsx";
 	static String koremTemplate31 = ".\\resources\\KOREM_template_31.xlsx";
 	static String kegocPath = "C:\\Users\\commercial\\Desktop\\Суточная ведомость\\";
 	static String koremPath = "C:\\Users\\commercial\\Desktop\\Суточная ведомость\\";
 	static String dailyStatsPath = "\\\\172.16.16.16\\коммерческий отдел\\";
-	static String dailyFileName = "Суточная выработка НОЯБРЬ.xlsx";
+	static String dailyFileName = "Суточная выработка ЯНВАРЬ.xlsx";
 	static String askuePath = "C:\\Users\\commercial\\Documents\\";
 	static String askueFileName = "РасходПоОбъектам1.xlsx";
 	static String dailyBrePath =  "\\\\172.16.16.16\\коммерческий отдел\\";
-	static String dailyBreFileName = "ДЕКАБРЬ БРЭ ежедневный.xlsx";
+	static String dailyBreFileName = "ЯНВАРЬ БРЭ ежедневный.xlsx";
 	static String dailyAnalyzePath = "\\\\172.16.16.16\\коммерческий отдел\\";
-	static String dailyAnalyzeFileName = "Анализ_ноябрь.xlsx";
+	static String koremSourcePath = "C:\\Users\\commercial\\Downloads\\";
+	static String koremSourceFile;
+	static String koremTargetPath = "C:\\Users\\commercial\\Desktop\\Суточная ведомость\\";
+	static String koremFileName;
+	
+	static String dailyAnalyzeFileName = "Анализ_январь.xlsx";
 	static final String FILE_EXTENSION = ".xlsx";
 	static final int ROWS_OFFSET = 2;
 	static final int CELLS_OFFSET = 3;
@@ -46,6 +51,10 @@ public class AppData {
 	static String middleNssString = "Корниенко В.А.";
 	static String endNssString = "Корниенко В.А.";
 	static String fileFilterText = "Excel (.xlsx)";
+	
+	static final String modeBuyString = "ПОКУПКА";
+	static final String modeSellString = "ПРОДАЖА";
+	static String modeString = modeBuyString;
 	
 	
 	static void printTimeLimits() {

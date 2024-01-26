@@ -85,7 +85,7 @@ class XLSXService {
 
 	}
 
-	// ======== Создание БРЭ для КЕГОК
+	// ======== Создание БРЭ для КЕГОК == не создал 31 декабря, подправить строки 103 и 104
 	// =====================================================================
 
 	void copyDailyRowsForKegoc() throws FileNotFoundException, IOException {
@@ -165,6 +165,8 @@ class XLSXService {
 		fos.close();
 		wb.close();
 	}
+	
+	
 	
 	// === Получить инициалы ===
 	String getInitials(String name) {

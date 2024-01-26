@@ -39,6 +39,18 @@ import javax.swing.JMenuItem;
 import javax.swing.JProgressBar;
 
 import excelone.threads.*;
+import java.awt.Color;
+import java.awt.Component;
+import javax.swing.Box;
+import javax.swing.border.TitledBorder;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.border.MatteBorder;
+import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JRadioButton;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JCheckBox;
 
 public class MakeDodonov {
 
@@ -66,10 +78,16 @@ public class MakeDodonov {
 	private XLSXService service;
 	private JPanel createKegocPanel;
 	private JPanel createDirectorPanel;
+	private JPanel koremPanel;
 	private DailyBreService dailyBreService;
 	private JPanel dailyBrePanel;
 	ProgressThread progressThread;
 	JProgressBar progressBar;
+	private JRadioButton priceRadioBuy;
+	private JRadioButton priceRadioSale;
+	private final ButtonGroup buttonGroup = new ButtonGroup();
+	private JTextField koremSourceField;
+	private JTextField koremTargetField;
 
 	/**
 	 * Launch the application.
@@ -106,9 +124,9 @@ public class MakeDodonov {
 		Dimension dimension = toolkit.getScreenSize();
 		frame.setBounds(dimension.width / 2 - 350, dimension.height / 2 - 235, 700, 530);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().setLayout(null);
 		frame.setResizable(false);
 		ButtonListener buttonListener = new ButtonListener();
+		frame.getContentPane().setLayout(null);
 
 		JSeparator separator = new JSeparator();
 		separator.setBounds(10, 243, 564, 0);
@@ -119,18 +137,18 @@ public class MakeDodonov {
 		frame.getContentPane().add(mainTabbedPane);
 
 		JLabel dateLabel = new JLabel("Дата (UTC+1)");
-		dateLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		dateLabel.setBounds(105, 36, 86, 34);
+		dateLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		frame.getContentPane().add(dateLabel);
 
 		// === Date set ===
 		dateField = new JTextField();
+		dateField.setBounds(20, 36, 86, 34);
 		dateField.setHorizontalAlignment(SwingConstants.CENTER);
 		dateField.setColumns(10);
-		dateField.setBounds(20, 36, 86, 34);
 		frame.getContentPane().add(dateField);
 		chDate.setTextField(dateField);
-		chDate.setLabelCurrentDayVisible(true);
+		chDate.setLabelCurrentDayVisible(false);
 		AppData.setCurrentDate(chDate);
 		chDate.addActionDateChooserListener(new DateChooserAdapter() {
 
@@ -226,6 +244,58 @@ public class MakeDodonov {
 		timeLabel.setBounds(10, 101, 137, 14);
 		dailyBrePanel.add(timeLabel);
 
+		// === KEGOC
+		// ==================================================================================================
+		createKegocPanel = new JPanel();
+		mainTabbedPane.addTab("БРЭ для KEGOC", null, createKegocPanel, null);
+		createKegocPanel.setLayout(null);
+
+		textField = new JTextField();
+		textField.setText(AppData.kegocPath + "БРЭ для KEGOC Bassel " + AppData.day
+				+ AppData.getMonthStringNameWithSuffix() + ".xlsx");
+		textField.setEditable(false);
+		textField.setColumns(10);
+		textField.setBounds(10, 12, 598, 33);
+		createKegocPanel.add(textField);
+
+		JButton selectPathButton_1 = new JButton("...");
+		selectPathButton_1.setBounds(618, 11, 31, 34);
+		createKegocPanel.add(selectPathButton_1);
+		selectPathButton_1.addActionListener(buttonListener::selectKegocPathButtonListener);
+
+		JButton createDirectorButton_1 = new JButton("Создать файл");
+		createDirectorButton_1.addActionListener(buttonListener::createKegocButtonListener);
+		createDirectorButton_1.setBounds(524, 151, 125, 33);
+		createKegocPanel.add(createDirectorButton_1);
+
+		// === Анализ ПОЧИНИТЬ ВРЕМЯ
+		// =============================================================================================
+
+		analyzeService = new AnalyzeService();
+
+		fillAnalyzePanel = new JPanel();
+		fillAnalyzePanel.setLayout(null);
+		mainTabbedPane.addTab("Анализ", null, fillAnalyzePanel, null);
+
+		analyzeField = new JTextField();
+		analyzeField.setText(AppData.dailyAnalyzePath + AppData.dailyAnalyzeFileName);
+		analyzeField.setEditable(false);
+		analyzeField.setColumns(10);
+		analyzeField.setBounds(10, 12, 598, 33);
+		fillAnalyzePanel.add(analyzeField);
+
+		JButton selectAnalyzePathButton = new JButton("...");
+		selectAnalyzePathButton.addActionListener(buttonListener::selectAnalyzePathButtonListener);
+		selectAnalyzePathButton.setBounds(618, 11, 31, 34);
+		fillAnalyzePanel.add(selectAnalyzePathButton);
+
+		JButton fillAnalyzeButton = new JButton("Записать в файл");
+		fillAnalyzeButton.addActionListener(buttonListener::fillAnalyzeButtonListener);
+		fillAnalyzeButton.setBounds(524, 151, 125, 33);
+		fillAnalyzePanel.add(fillAnalyzeButton);
+
+		ButtonGroup group = new ButtonGroup();
+
 		// === DIRECTOR
 		// ================================================================================================
 		createDirectorPanel = new JPanel();
@@ -245,6 +315,7 @@ public class MakeDodonov {
 		selectPathButton.addActionListener(buttonListener::selectDirectorPathButtonListener);
 
 		JButton createDirectorButton = new JButton("Записать в файл");
+		createDirectorButton.setEnabled(false);
 		createDirectorButton.setBounds(524, 151, 125, 33);
 		createDirectorPanel.add(createDirectorButton);
 		createDirectorButton.addActionListener(buttonListener::createDirectorButtonListener);
@@ -300,126 +371,136 @@ public class MakeDodonov {
 		endDisLabel.setBounds(146, 126, 132, 14);
 		createDirectorPanel.add(endDisLabel);
 
-		// === KEGOC
-		// ==================================================================================================
-		createKegocPanel = new JPanel();
-		mainTabbedPane.addTab("БРЭ для KEGOC", null, createKegocPanel, null);
-		createKegocPanel.setLayout(null);
-
-		textField = new JTextField();
-		textField.setText(AppData.kegocPath + "БРЭ для KEGOC Bassel " + AppData.day
-				+ AppData.getMonthStringNameWithSuffix() + ".xlsx");
-		textField.setEditable(false);
-		textField.setColumns(10);
-		textField.setBounds(10, 12, 598, 33);
-		createKegocPanel.add(textField);
-
-		JButton selectPathButton_1 = new JButton("...");
-		selectPathButton_1.setBounds(618, 11, 31, 34);
-		createKegocPanel.add(selectPathButton_1);
-		selectPathButton_1.addActionListener(buttonListener::selectKegocPathButtonListener);
-
-		JButton createDirectorButton_1 = new JButton("Создать файл");
-		createDirectorButton_1.addActionListener(buttonListener::createKegocButtonListener);
-		createDirectorButton_1.setBounds(524, 151, 125, 33);
-		createKegocPanel.add(createDirectorButton_1);
-
-		// === Анализ ПОЧИНИТЬ ВРЕМЯ
-		// =============================================================================================
-
-		analyzeService = new AnalyzeService();
-
-		fillAnalyzePanel = new JPanel();
-		fillAnalyzePanel.setLayout(null);
-		mainTabbedPane.addTab("Анализ", null, fillAnalyzePanel, null);
-
-		analyzeField = new JTextField();
-		analyzeField.setText(AppData.dailyAnalyzePath + AppData.dailyAnalyzeFileName);
-		analyzeField.setEditable(false);
-		analyzeField.setColumns(10);
-		analyzeField.setBounds(10, 12, 598, 33);
-		fillAnalyzePanel.add(analyzeField);
-
-		JButton selectAnalyzePathButton = new JButton("...");
-		selectAnalyzePathButton.addActionListener(buttonListener::selectAnalyzePathButtonListener);
-		selectAnalyzePathButton.setBounds(618, 11, 31, 34);
-		fillAnalyzePanel.add(selectAnalyzePathButton);
-
-		JButton fillAnalyzeButton = new JButton("Записать в файл");
-		fillAnalyzeButton.addActionListener(buttonListener::fillAnalyzeButtonListener);
-		fillAnalyzeButton.setBounds(524, 151, 125, 33);
-		fillAnalyzePanel.add(fillAnalyzeButton);
+		JLabel infoLabel = new JLabel("Функционал данной вкладки отключен по причине отсутствия необходимости.");
+		infoLabel.setFont(new Font("Arial", Font.BOLD, 12));
+		infoLabel.setForeground(new Color(255, 0, 0));
+		infoLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		infoLabel.setBounds(10, 151, 504, 35);
+		createDirectorPanel.add(infoLabel);
+		
+		
+		
+		// KOREM =============================================================
+		koremPanel = new JPanel();
+		mainTabbedPane.addTab("КОРЕМ", null, koremPanel, null);
+		mainTabbedPane.setEnabledAt(4, false);
+		koremPanel.setLayout(null);
+		
+				JPanel radioPanel = new JPanel();
+				radioPanel.setBorder(new TitledBorder(null, "\u0412\u0438\u0434 \u0442\u043E\u0440\u0433\u043E\u0432\u043B\u0438", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+				radioPanel.setBounds(10, 109, 97, 77);
+				koremPanel.add(radioPanel);
+				
+						priceRadioBuy = new JRadioButton("Покупка");
+						radioPanel.add(priceRadioBuy);
+						priceRadioBuy.setSelected(true);
+						priceRadioBuy.addActionListener(buttonListener::setRadioButtonPriceListener);
+						
+						priceRadioSale = new JRadioButton("Продажа");
+						radioPanel.add(priceRadioSale);
+						priceRadioSale.addActionListener(buttonListener::setRadioButtonPriceListener);
+						group.add(priceRadioBuy);
+						group.add(priceRadioSale);
+						
+						koremSourceField = new JTextField();
+						koremSourceField.setEditable(false);
+						koremSourceField.setBounds(10, 22, 600, 29);
+						koremPanel.add(koremSourceField);
+						koremSourceField.setColumns(10);
+						
+						koremTargetField = new JTextField();
+						koremTargetField.setText(AppData.koremTargetPath);
+						koremTargetField.setEditable(false);
+						koremTargetField.setBounds(10, 61, 600, 29);
+						koremPanel.add(koremTargetField);
+						koremTargetField.setColumns(10);
+						
+						JButton koremSourceButton = new JButton("...");
+						koremSourceButton.addActionListener(buttonListener::selectKoremPathButtonListener);
+						koremSourceButton.setBounds(617, 22, 27, 29);
+						koremPanel.add(koremSourceButton);
+						
+						
+						JButton koremTargetButton = new JButton("New button");
+						koremTargetButton.addActionListener(buttonListener::setKoremPathButtonListener);
+						koremTargetButton.setBounds(617, 60, 27, 29);
+						koremPanel.add(koremTargetButton);
+						
+						JButton koremFillButton = new JButton("Записать в файл");
+						koremFillButton.addActionListener(buttonListener::createKoremFileButtonListener);
+						koremFillButton.setBounds(519, 153, 125, 33);
+						koremPanel.add(koremFillButton);
 
 		JSeparator separator_1 = new JSeparator();
 		separator_1.setBounds(10, 317, 664, 2);
 		frame.getContentPane().add(separator_1);
 
 		JLabel lblNewLabel = new JLabel("Минимум");
-		lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNewLabel.setBounds(22, 417, 102, 23);
+		lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		frame.getContentPane().add(lblNewLabel);
 
 		JLabel lblNewLabel_1 = new JLabel("Максимум");
-		lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNewLabel_1.setBounds(134, 417, 102, 23);
+		lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
 		frame.getContentPane().add(lblNewLabel_1);
 
 		JLabel lblNewLabel_2 = new JLabel("Среднее");
-		lblNewLabel_2.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNewLabel_2.setBounds(246, 417, 102, 23);
+		lblNewLabel_2.setHorizontalAlignment(SwingConstants.CENTER);
 		frame.getContentPane().add(lblNewLabel_2);
 
 		JLabel lblNewLabel_3 = new JLabel("Всего");
-		lblNewLabel_3.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNewLabel_3.setBounds(358, 417, 102, 23);
+		lblNewLabel_3.setHorizontalAlignment(SwingConstants.CENTER);
 		frame.getContentPane().add(lblNewLabel_3);
 
 		snMinStats = new JLabel("-");
+		snMinStats.setBounds(22, 375, 102, 34);
 		snMinStats.setFont(new Font("Tahoma", Font.BOLD, 15));
 		snMinStats.setHorizontalAlignment(SwingConstants.CENTER);
-		snMinStats.setBounds(22, 375, 102, 34);
 		frame.getContentPane().add(snMinStats);
 
 		snMaxStats = new JLabel("-");
+		snMaxStats.setBounds(134, 375, 102, 34);
 		snMaxStats.setFont(new Font("Tahoma", Font.BOLD, 15));
 		snMaxStats.setHorizontalAlignment(SwingConstants.CENTER);
-		snMaxStats.setBounds(134, 375, 102, 34);
 		frame.getContentPane().add(snMaxStats);
 
 		snAvgStats = new JLabel("-");
+		snAvgStats.setBounds(246, 375, 102, 34);
 		snAvgStats.setFont(new Font("Tahoma", Font.BOLD, 15));
 		snAvgStats.setHorizontalAlignment(SwingConstants.CENTER);
-		snAvgStats.setBounds(246, 375, 102, 34);
 		frame.getContentPane().add(snAvgStats);
 
 		snTotalStats = new JLabel("-");
+		snTotalStats.setBounds(358, 375, 102, 34);
 		snTotalStats.setFont(new Font("Tahoma", Font.BOLD, 15));
 		snTotalStats.setHorizontalAlignment(SwingConstants.CENTER);
-		snTotalStats.setBounds(358, 375, 102, 34);
 		frame.getContentPane().add(snTotalStats);
 
 		powerMinStats = new JLabel("-");
+		powerMinStats.setBounds(22, 330, 102, 34);
 		powerMinStats.setFont(new Font("Tahoma", Font.BOLD, 15));
 		powerMinStats.setHorizontalAlignment(SwingConstants.CENTER);
-		powerMinStats.setBounds(22, 330, 102, 34);
 		frame.getContentPane().add(powerMinStats);
 
 		powerMaxStats = new JLabel("-");
+		powerMaxStats.setBounds(134, 330, 102, 34);
 		powerMaxStats.setFont(new Font("Tahoma", Font.BOLD, 15));
 		powerMaxStats.setHorizontalAlignment(SwingConstants.CENTER);
-		powerMaxStats.setBounds(134, 330, 102, 34);
 		frame.getContentPane().add(powerMaxStats);
 
 		powerAvgStats = new JLabel("-");
+		powerAvgStats.setBounds(246, 330, 102, 34);
 		powerAvgStats.setFont(new Font("Tahoma", Font.BOLD, 15));
 		powerAvgStats.setHorizontalAlignment(SwingConstants.CENTER);
-		powerAvgStats.setBounds(246, 330, 102, 34);
 		frame.getContentPane().add(powerAvgStats);
 
 		powerTotalStats = new JLabel("-");
+		powerTotalStats.setBounds(358, 330, 102, 34);
 		powerTotalStats.setFont(new Font("Tahoma", Font.BOLD, 15));
 		powerTotalStats.setHorizontalAlignment(SwingConstants.CENTER);
-		powerTotalStats.setBounds(358, 330, 102, 34);
 		frame.getContentPane().add(powerTotalStats);
 
 		JLabel powerTitleLabel = new JLabel("Выработка");
@@ -463,17 +544,17 @@ public class MakeDodonov {
 		frame.getContentPane().add(separator_2);
 
 		JLabel lblNewLabel_4 = new JLabel("Для лучших Космических Диспетчеров и Игоря © BasselGroup LLS 2023");
-		lblNewLabel_4.setHorizontalAlignment(SwingConstants.TRAILING);
 		lblNewLabel_4.setBounds(276, 466, 398, 14);
+		lblNewLabel_4.setHorizontalAlignment(SwingConstants.TRAILING);
 		frame.getContentPane().add(lblNewLabel_4);
-		
+
 		progressBar = new JProgressBar();
-		progressBar.setValue(0);
 		progressBar.setBounds(10, 466, 256, 14);
+		progressBar.setValue(0);
 		progressBar.setVisible(false);
 		frame.getContentPane().add(progressBar);
 		progressThread = new ProgressThread(progressBar);
-		
+
 		fileCloserMenuItem.addActionListener(new ActionListener() {
 
 			@Override
@@ -498,9 +579,9 @@ public class MakeDodonov {
 					snMaxStats.setText(String.valueOf(Math.round(statsArray[1][1])));
 					snAvgStats.setText(String.valueOf(Math.round(statsArray[1][2])));
 					snTotalStats.setText(String.valueOf(Math.round(statsArray[1][3])));
-				}catch (IllegalArgumentException ei) {
+				} catch (IllegalArgumentException ei) {
 					JOptionPane.showMessageDialog(frame, "Выбери дату текущего месяца");
-				}catch (FileNotFoundException e1) {
+				} catch (FileNotFoundException e1) {
 					JOptionPane.showMessageDialog(frame,
 							"Файл \"" + AppData.dailyFileName + "\" недоступен либо открыт", "ОШИБКА",
 							JOptionPane.ERROR_MESSAGE);
@@ -693,7 +774,7 @@ public class MakeDodonov {
 						}
 						JOptionPane.showMessageDialog(dailyBrePanel, ("Данные скопированы"), "ВЫПОЛНЕНО",
 								JOptionPane.PLAIN_MESSAGE);
-						
+
 					}
 				}
 			} catch (IllegalArgumentException e1) {
@@ -741,7 +822,89 @@ public class MakeDodonov {
 
 			}
 		}
+		
+		private void setRadioButtonPriceListener(ActionEvent e) {
+			if (e.getSource() == priceRadioBuy) {
+				AppData.modeString = AppData.modeBuyString;
+				System.out.println("Mode set to " + AppData.modeString);
+			}
+			if (e.getSource() == priceRadioSale) {
+				AppData.modeString = AppData.modeSellString;
+				System.out.println("Mode set to " + AppData.modeString);
+			}
+		}
+		private void selectKoremPathButtonListener(ActionEvent e) {
+			JFileChooser fileChooser = new JFileChooser();
+			fileChooser.setCurrentDirectory(new File(AppData.koremSourcePath));
+			fileChooser.setFileFilter(new FileFilter() {
+				@Override
+				public String getDescription() {
+					return "Excel (.xlsx)";
+				}
 
+				@Override
+				public boolean accept(File f) {
+					if (f.getName().endsWith(AppData.FILE_EXTENSION) || f.isDirectory())
+						return true;
+					return false;
+				}
+			});
+			fileChooser.showDialog(koremPanel, "Выбрать файл с ценами");
+			File f;
+			try {
+				f = fileChooser.getSelectedFile();
+				AppData.koremSourceFile = f.getAbsolutePath();
+				System.out.println("Korem Source File set to " + AppData.koremSourceFile);
+				koremSourceField.setText(f.getAbsolutePath());
+
+			} catch (NullPointerException e1) {
+				System.out.println("Korem File not choosed");
+			}
+		}
+		
+		private void setKoremPathButtonListener(ActionEvent e) {
+			JFileChooser fileChooser = new JFileChooser();
+			fileChooser.setCurrentDirectory(new File(AppData.koremTargetPath));
+			fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			fileChooser.showDialog(koremPanel, "Выбрать папку для сохранения файла");
+			File f;
+			try {
+				f = fileChooser.getSelectedFile();
+				koremTargetField.setText(f.getAbsolutePath());
+				AppData.koremTargetPath = f.getAbsolutePath();
+				System.out.println("Korem Target Path set to " + AppData.koremTargetPath);
+			} catch (NullPointerException e1) {
+				System.out.println("Korem Target Path not choosed");
+			}
+		}
+		
+		private void createKoremFileButtonListener(ActionEvent e) {
+			if (AppData.koremSourceFile == null) {
+				JOptionPane.showMessageDialog(koremPanel, "Файл-источник не выбран!", "ОШИБКА", JOptionPane.WARNING_MESSAGE);
+				System.out.println("Korem source file not choosed");
+				return;
+			}
+			int input;
+			switch (AppData.modeString) {
+			case "ПОКУПКА":
+				input = JOptionPane.showConfirmDialog(koremPanel, "Записать данные из файла\n" 
+						+ new File(AppData.koremSourceFile).getName() + "\nв режиме \"ПОКУПКА\"?",
+						"Подтверждение операции", 
+						JOptionPane.YES_NO_OPTION);
+				if (input == 0) {
+					System.out.println("BUYING...");				
+				}
+				break;
+			case "ПРОДАЖА":
+				input = JOptionPane.showConfirmDialog(koremPanel, "Записать данные из файла\n" 
+						+ new File(AppData.koremSourceFile).getName() + "\nв режиме \"ПРОДАЖА\"?",
+						"Подтверждение операции", 
+						JOptionPane.YES_NO_OPTION);
+				if (input == 0) {
+					System.out.println("SELLING...");				
+				}
+				break;
+			}
+		}
 	}
-
 }
